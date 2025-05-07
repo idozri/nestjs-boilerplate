@@ -1,0 +1,150 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+### ✅ Task Execution and Validation
+- Each task must be approached methodically, step-by-step.
+- Before starting a task:
+  - Run the helper script: `npm run task-review` to check open tasks in `TASKS.md`
+  - Start with the next `[ ]` task in the list
+  - Follow all project rules for code structure, testing, documentation, and clarity
+
+**🧾 Task Completion Checklist:**
+1. ✅ **Did I finish the actual task as defined in `TASKS.md`?**  
+   - If yes → continue.  
+   - If no → review what's missing or ask for clarification.
+
+2. 📝 **Do I need to update or create any documentation?**  
+   - Examples: `README.md`, `PLANNING.md`, `SYSTEM_DESIGN.md`, inline code comments  
+   - If yes → update it now.
+
+3. 🧪 **Do I need to update or add tests for this change?**  
+   - Add test cases for success, failure, and edge cases.  
+   - Run all tests and confirm they pass.
+
+4. 🔍 **Have I confirmed nothing else broke as a result of this task?**  
+   - Check the app behavior  
+   - Run `npm run test` and verify all pass  
+   - Check for regressions in related logic
+
+- Only mark the task as `[x]` in `TASKS.md` **after completing all the above**.
+
+### 🔄 Project Awareness & Context
+- Always read `PLANNING.md`, `TASKS.md`, and `SYSTEM_DESIGN.md` before making any changes.
+- Use `TASKS.md` as the source of truth for current development tasks. Do not invent new features unless explicitly instructed.
+- Confirm that any completed task has been marked `[x]` in `TASKS.md` once implemented and tested.
+- Use the helper script `npm run task-review` (from `scripts/task-review.ts`) to check what tasks are still open before starting.
+
+### 🧱 Code Structure & Modularity
+- Follow the modular NestJS architecture: use separate folders for modules, services, controllers, and DTOs.
+- Keep files under 500 lines of code. If they grow larger, refactor into helper modules.
+- Maintain consistent naming conventions and folder structure as shown in `src/`.
+- Do not place logic directly inside controllers — move all business logic to services.
+- Use `index.ts` barrel files in each module to re-export components.
+- Place DTOs inside a `dto/` folder and exceptions inside `exceptions/` or `filters/`.
+
+### 🧪 Testing & Reliability
+- All new services, utilities, and routes must include unit tests.
+- Each test suite must contain:
+  - One success case
+  - One failure case
+  - One edge case
+- Place all test files under a `__tests__` directory mirroring the source structure.
+
+### 🚨 Error Handling & Alerts
+- Wrap logic in `try/catch` where failures might occur.
+- Use the `AppException` class for structured error responses.
+- Use the `telegramAlert()` or `sendEmailAlert()` functions if alerting is enabled.
+- All API responses should conform to `ApiResponseDto<T>`.
+
+### 📦 Feature Toggles & Config
+- Optional features must be toggleable using `.env` variables:
+  - `ENABLE_TELEGRAM_ALERTS`
+  - `ENABLE_EMAIL_ALERTS`
+  - `ENABLE_SENTRY`
+  - `ENABLE_RBAC`
+- Use dynamic imports in `AppModule` to enable or disable modules based on `.env` settings.
+- Add new environment variables to `config/configuration.ts`.
+- Validate all `.env` variables using `joi` or `zod` schemas.
+- Always use `ConfigService` to read environment values.
+- Update `.env.example` and document new variables in `README.md`.
+
+### 📚 Documentation & Clarity
+- Every feature or module must be documented in:
+  - `README.md`
+  - `PLANNING.md` (for technical structure)
+  - `TASKS.md` (if it involved implementation work)
+- Add inline comments to explain complex or non-obvious logic. Use `// Reason: ...` format.
+
+### 🛠 Dev & DX Automation
+- Scripts inside `/scripts` must have a usage comment at the top.
+- All scripts must be documented in `README.md`.
+- Use `npm run <script>` instead of raw shell commands for consistency.
+- If CLI prompts are added, document them in `docs/CURSOR_SETUP.md`.
+- Always run `npm run task-review` before continuing with new tasks.
+
+### 🔒 Security Checklist
+- Validate all user inputs with class-validator or similar
+- Implement rate limiting on all public endpoints
+- Use parameterized queries to prevent SQL injection
+- Set appropriate security headers (CORS, CSP, etc.)
+- Sanitize all data before returning to clients
+- Store sensitive credentials only in `.env` (never in code)
+- Implement proper authentication and authorization checks
+
+### 📊 Performance Guidelines
+- Use pagination for list endpoints
+- Implement database indices for frequently queried fields
+- Add caching for expensive operations
+- Monitor memory usage with appropriate logging
+- Optimize database queries to minimize roundtrips
+- Use projection to return only required fields
+
+### 🌐 API Standards
+- Follow RESTful conventions for endpoint naming
+- Version all APIs (e.g., `/api/v1/resource`)
+- Implement consistent error response format
+- Document all endpoints with Swagger/OpenAPI
+- Include proper HTTP status codes in responses
+- Support filtering, sorting, and pagination on list endpoints
+
+### 🏗️ Version Control Guidelines
+- Write descriptive commit messages with format: `type(scope): description`
+- Create feature branches from `develop` with format: `feature/feature-name`
+- Never commit directly to `main` or `develop`
+- Keep PRs focused on single concerns
+- Reference task/issue numbers in commit messages
+- Squash commits before merging to main branches
+
+### 🚀 Deployment Process
+- Run all tests before deployment
+- Validate environment variables are properly set
+- Follow the deployment checklist in `docs/DEPLOYMENT.md`
+- Monitor logs after deployment for unexpected errors
+- Implement rollback procedures for failed deployments
+- Use staged deployments (dev → staging → production)
+
+### 👁️ Code Review Standards
+- Verify code meets all style guide requirements
+- Check test coverage for new functionality
+- Review error handling for edge cases
+- Confirm documentation is updated
+- Validate performance impact of changes
+- Ensure security best practices are followed
+
+### 🤖 AI Execution Rules
+- Never hallucinate libraries, modules, or logic. Only use what's present or instructed.
+- Do not assume missing context. Always ask the user for clarification if unsure.
+- Do not overwrite or delete existing code unless the task specifically requires it.
+- Only proceed step-by-step and confirm task completion before continuing.
+- If multiple files must be modified, list them at the start.
+- Do not rename or move files unless the task clearly says to.
+- Break down every unchecked task into subtasks and show the breakdown before coding.
+
+### 🧠 Rule Activation Behavior
+- On startup, confirm you have reloaded this file.
+- Do not begin executing tasks until this file is acknowledged and understood.
+- If anything appears out-of-sync, ask the user to rerun "Generate Cursor Rules".
+
+> Cursor: If at any point you feel the instruction is unclear or you're unsure about context or file structure, ask a question before proceeding.
