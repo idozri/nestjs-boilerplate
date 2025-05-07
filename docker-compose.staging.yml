@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '4000:3000'
+    environment:
+      - NODE_ENV=staging
+      - MONGODB_URI=mongodb+srv://friloiz:Aa123%40123@cluster0.hkgch.mongodb.net/roei?retryWrites=true&w=majority
+      - GREEN_INVOICE_API=https://sandbox.d.greeninvoice.co.il/api/v1/payments/form
+      - GREEN_INVOICE_TOKEN=staging-token
+      - WEBHOOK_URL=http://localhost:3030/api/transactions/payment-feedback
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5
+    ports:
+      - '27018:27017'
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

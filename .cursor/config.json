@@ -1,0 +1,20 @@
+{
+  "defaultModel": "gpt-4o",
+  "thinking": true,
+  "autoSelectModel": false,
+  "autoRunTests": true,
+  "autoRunLint": true,
+  "checkTaskCompletion": true,
+  "docs": {
+    "entryDocs": [
+      "README.md",
+      "TASKS.md",
+      "PLANNING.md",
+      "SYSTEM_DESIGN.md",
+      "docs/CURSOR_SETUP.md"
+    ],
+    "taskTracker": "TASKS.md"
+  },
+  "rules": [".cursor/rules/rules.mdc"],
+  "highContextMode": true
+}

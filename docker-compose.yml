@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  app:
+    build: .
+    ports:
+      - '3000:3000'
+    environment:
+      - MONGODB_URI=mongodb+srv://friloiz:Aa123%40123@cluster0.hkgch.mongodb.net/roei?retryWrites=true&w=majority
+      - GREEN_INVOICE_API_URL=https://sandbox.d.greeninvoice.co.il
+      - GREEN_INVOICE_SECRET_KEY=lWZFjbYHVHLHe6mMO2rh1Q
+      - GREEN_INVOICE_API_KEY=fcdad197-4700-4202-8fec-01cfee16dffe
+      - GREEN_INVOICE_PLUGIN_ID=000efe58-79c8-4f03-a778-649d3675711a
+      - GREEN_INVOICE_NOTIFY_URL=https://c8f0-2a06-c701-933d-6200-d121-caba-a4ec-e129.ngrok-free.app/api/transactions/payment-feedback
+      - WEBHOOK_URL=http://localhost:3000/api/transactions/payment-feedback
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:5
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
