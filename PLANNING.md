@@ -28,3 +28,11 @@
 - Use ApiResponseDto
 - Telegram for exception alerts
 - Swagger for API docs
+
+## Testing Strategy
+
+- Core services have 100% test coverage (ExceptionLogService, ApiKeyGuard, etc.)
+- All test files include success, failure, and edge cases
+- Temporarily reduced coverage thresholds in jest.config.js
+- Aiming to achieve 100% coverage before final release
+- Each PR should increase coverage or maintain current levels

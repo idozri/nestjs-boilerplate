@@ -11,10 +11,27 @@ export class ExceptionLog {
   context: string;
 
   @Prop({ type: Object })
+  data: Record<string, any>;
+
+  @Prop({ type: Object })
   metadata: Record<string, any>;
 
   @Prop({ required: true })
   severity: ErrorSeverity;
+
+  @Prop({
+    type: {
+      name: { type: String },
+      message: { type: String },
+      stack: { type: String },
+    },
+    _id: false,
+  })
+  cause?: {
+    name?: string;
+    message?: string;
+    stack?: string;
+  };
 
   @Prop({ default: Date.now })
   timestamp: Date;

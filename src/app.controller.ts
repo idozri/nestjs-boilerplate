@@ -4,9 +4,9 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 @ApiTags('Health')
 @Controller()
 export class AppController {
-  @Get()
+  @Get('health')
   @ApiOperation({ summary: 'Health check endpoint' })
   healthCheck() {
-    return { status: 'NestJS Boilerplate API is running' };
+    return { status: 'Service is running' };
   }
 }

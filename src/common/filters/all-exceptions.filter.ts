@@ -8,12 +8,11 @@ import {
 import { Request, Response } from 'express';
 import { AppException } from '../exceptions/app.exception';
 import { ErrorSeverity } from '../enums/error-severity.enum';
-import { logAppEvent } from '../utils/log-app-event.util';
-import { ExceptionLogService } from '../services/exception-log.service';
+import { LoggerService } from '../services/logger.service';
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logService: ExceptionLogService) {}
+  constructor(private readonly logger: LoggerService) {}
 
   async catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
@@ -22,7 +21,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Unexpected error occurred';
-    let severity = ErrorSeverity.LOW;
+    let severity = ErrorSeverity.ERROR;
 
     if (exception instanceof AppException) {
       status = exception.getStatus();
@@ -32,6 +31,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
       status = exception.getStatus();
       const res = exception.getResponse();
       message = typeof res === 'string' ? res : JSON.stringify(res);
+    } else if (exception instanceof Error) {
+      message = exception.message || String(exception);
     } else if (typeof exception === 'object' && exception !== null) {
       message = JSON.stringify(exception);
     } else {
@@ -40,25 +41,27 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     if (
       status >= 500 &&
-      severity === ErrorSeverity.LOW &&
-      (message.includes('Mongo') ||
-        message.includes('UnhandledPromise') ||
-        message.includes('TypeError') ||
-        message.includes('ECONNREFUSED') ||
-        message.includes('Redis') ||
-        message.includes('Connection timeout'))
+      severity === ErrorSeverity.ERROR &&
+      this.shouldUpgradeSeverity(message)
     ) {
-      severity = ErrorSeverity.HIGH;
+      severity = ErrorSeverity.FATAL;
     }
 
-    await logAppEvent(
-      message,
-      `${request.method} ${request.url}`,
-      severity,
-      { path: request.url, method: request.method, status },
-      { sendAlert: true, saveToDb: true },
-      this.logService
-    );
+    if (severity === ErrorSeverity.FATAL) {
+      this.logger.fatal(message, {
+        context: 'AllExceptionsFilter',
+        metadata: { path: request.url, method: request.method, status },
+        cause: exception instanceof Error ? exception : undefined,
+        options: { sendAlert: true, saveToDb: true },
+      });
+    } else {
+      this.logger.error(message, {
+        context: 'AllExceptionsFilter',
+        metadata: { path: request.url, method: request.method, status },
+        cause: exception instanceof Error ? exception : undefined,
+        options: { sendAlert: status >= 500, saveToDb: true },
+      });
+    }
 
     response.status(status).json({
       statusCode: status,
@@ -66,5 +69,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
       path: request.url,
       message,
     });
+  }
+
+  private shouldUpgradeSeverity(message: string): boolean {
+    return (
+      message.includes('Mongo') ||
+      message.includes('UnhandledPromise') ||
+      message.includes('TypeError') ||
+      message.includes('ECONNREFUSED') ||
+      message.includes('Redis') ||
+      message.includes('Connection timeout')
+    );
   }
 }

@@ -109,6 +109,54 @@ Supports feature selection via prompts.
 
 ## ✅ Build fast. Scale safely. Deploy with confidence.
 
+## Setup CLI Script
+
+To set up the project environment, you can use the provided setup CLI script. This script will install all necessary dependencies and perform initial setup tasks.
+
+### Usage
+
+1. Ensure you have Node.js and npm installed on your system.
+2. Navigate to the project root directory.
+3. Run the setup script using the following command:
+
+   ```bash
+   ts-node scripts/setup-cli.ts
+   ```
+
+This will execute the setup process, installing dependencies and preparing the project for development.
+
+## RBAC Guard
+
+The RBAC (Role-Based Access Control) guard is used to manage access to routes based on user roles. It checks if the user has the required role to access a specific route.
+
+### Usage
+
+To use the RBAC guard, annotate your route handlers with the `@Roles` decorator, specifying the roles that are allowed to access the route.
+
+```typescript
+import { Controller, Get } from '@nestjs/common';
+import { Roles } from './rbac/roles.decorator';
+
+@Controller('example')
+export class ExampleController {
+  @Get()
+  @Roles('admin')
+  findAll() {
+    return 'This route is restricted to admin users.';
+  }
+}
+```
+
+### Adding Roles Decorator
+
+Create a `roles.decorator.ts` file in the `rbac` directory to define the `@Roles` decorator:
+
+```typescript
+import { SetMetadata } from '@nestjs/common';
+
+export const Roles = (...roles: string[]) => SetMetadata('roles', roles);
+```
+
 ```
 
 ```

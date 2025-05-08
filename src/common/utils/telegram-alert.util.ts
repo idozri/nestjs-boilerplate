@@ -1,26 +1,42 @@
 import axios from 'axios';
-import { ErrorSeverity } from '../enums/error-severity.enum';
-import { logAppEvent } from './log-app-event.util';
+import { LoggerService } from '../services/logger.service';
 
-export async function sendTelegramAlert(message: string) {
+export async function sendTelegramAlert(
+  message: string,
+  logger?: LoggerService
+) {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  if (!token || !chatId) return;
+  if (!token || !chatId) {
+    if (logger) {
+      logger.warn(`Missing Telegram configuration for alert`, {
+        context: 'TelegramAlertService',
+      });
+    }
+    return;
+  }
 
+  const url = `https://api.telegram.org/bot${token}/sendMessage`;
   try {
-    await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+    await axios.post(url, {
       chat_id: chatId,
       text: message,
       parse_mode: 'Markdown',
     });
   } catch (error) {
-    logAppEvent(
-      'Failed to send Telegram alert',
-      'TelegramAlertUtil',
-      ErrorSeverity.MEDIUM,
-      { error, message },
-      { sendAlert: true, saveToDb: true }
-    );
+    if (logger) {
+      logger.error('Failed to send Telegram alert', {
+        context: 'TelegramAlertService',
+        cause: error,
+        metadata: {
+          chatId,
+          endpoint: url,
+        },
+        data: {
+          text: message,
+        },
+      });
+    }
   }
 }
