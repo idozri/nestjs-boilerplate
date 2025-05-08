@@ -1,29 +1,30 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import helmet from 'helmet';
 import * as dotenv from 'dotenv';
+import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { ExceptionLogService } from './common/services/exception-log.service';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { LoggerService } from './common/services/logger.service';
 
-// Load environment variables
+/* istanbul ignore next */
 dotenv.config();
 
-async function bootstrap() {
+export async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
   const configService = app.get(ConfigService);
-  // Security headers
+  const logger = app.get(LoggerService);
+  logger.setLoggerName('Bootstrap');
+
   app.use(helmet());
 
-  // Enable CORS with default or custom options
   app.enableCors({
-    origin: '*', // 👈 replace with your domain in production
+    origin: '*', // Replace with real domain in prod
     credentials: true,
   });
 
-  // Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -32,25 +33,45 @@ async function bootstrap() {
     })
   );
 
-  // Global filters
-  const logService = app.get(ExceptionLogService);
-  app.useGlobalFilters(new AllExceptionsFilter(logService));
+  app.useGlobalFilters(new AllExceptionsFilter(logger));
 
-  // Optional: Prefix all routes with /api
   app.setGlobalPrefix('api');
 
-  // Swagger setup
+  // Swagger config
   const config = new DocumentBuilder()
     .setTitle('NestJS Boilerplate')
     .setDescription('API documentation for the NestJS Boilerplate')
     .setVersion('1.0')
     .build();
+
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api/docs', app, document);
 
   const port = configService.get<number>('PORT', 3033);
   await app.listen(port);
-  console.log(`Application listening on port ${port}`);
-  console.log(`Swagger UI available at http://localhost:${port}/api/docs`);
+
+  logger.info(`Application listening on port ${port}`, {
+    context: 'NestBootstrap',
+  });
+  logger.debug(`Swagger UI available at /api/docs`, {
+    context: 'NestBootstrap',
+  });
+
+  return app;
 }
-bootstrap();
+
+/* istanbul ignore next */
+export const isMainModule = () => require.main === module;
+/* istanbul ignore next */
+export const callBootstrap = () => bootstrap();
+/* istanbul ignore next */
+export const executeIfMainModule = () => {
+  if (isMainModule()) {
+    callBootstrap();
+    return true;
+  }
+  return false;
+};
+
+/* istanbul ignore next */
+executeIfMainModule();

@@ -1,3 +1,3 @@
 import { Logger } from '@nestjs/common';
 
-export const AppLogger = new Logger('PaymentsServer');
+export const LoggerService = new Logger('PaymentsServer');
